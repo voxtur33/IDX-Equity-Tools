@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDX Morning Briefing • Equity Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: #0a0e17;
+      color: #c8cdd8;
+      font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .glow-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #3b82f6, #06b6d4, transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+    .container { max-width: 720px; margin: 0 auto; padding: 32px 20px; }
+
+    /* Header */
+    .badge { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
+    .badge-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5a6478; letter-spacing: 2px; text-transform: uppercase; }
+    h1 { font-size: 28px; font-weight: 700; color: #e8ecf4; letter-spacing: -0.5px; }
+    .subtitle { font-size: 13px; color: #5a6478; margin-top: 6px; }
+
+    /* API Key */
+    .api-row { display: flex; gap: 8px; margin-top: 20px; margin-bottom: 24px; }
+    .api-input {
+      flex: 1; background: #111827; border: 1px solid #1e2638; border-radius: 8px;
+      padding: 10px 14px; color: #c8cdd8; font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; outline: none; transition: border-color 0.15s;
+    }
+    .api-input:focus { border-color: #3b82f6; }
+    .api-input::placeholder { color: #3a4256; }
+    .api-status {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      padding: 0 12px; border-radius: 6px; white-space: nowrap;
+    }
+    .api-status.ok { color: #4ade80; background: rgba(34,197,94,0.08); border: 1px solid #14532d; }
+    .api-status.empty { color: #5a6478; background: #111827; border: 1px solid #1e2638; }
+
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 1px solid #1e2638; margin-bottom: 24px; }
+    .tab-btn {
+      padding: 8px 20px; background: transparent; border: none; color: #5a6478;
+      font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent;
+      transition: all 0.15s ease; font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .tab-btn:hover { color: #8892a6; }
+    .tab-btn.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+
+    /* Chips */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .chip-label { font-size: 12px; color: #5a6478; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+    .sector-label { font-size: 11px; color: #3b82f6; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .chip {
+      padding: 6px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s ease; border: 1px solid #1e2638;
+      background: #111827; color: #8892a6; user-select: none;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .chip:hover { border-color: #3b82f6; color: #c8cdd8; }
+    .chip.active { background: #1e3a5f; border-color: #3b82f6; color: #60a5fa; box-shadow: 0 0 12px rgba(59,130,246,0.15); }
+    .chip.green-active { background: #14332a; border-color: #10b981; color: #34d399; box-shadow: 0 0 12px rgba(16,185,129,0.15); }
+    .link-btn {
+      background: none; border: none; color: #5a6478; font-size: 11px; cursor: pointer;
+      font-family: 'JetBrains Mono', monospace; text-decoration: underline; padding: 0;
+    }
+    .link-btn:hover { color: #8892a6; }
+
+    /* Textarea */
+    .custom-input {
+      width: 100%; background: #111827; border: 1px solid #1e2638; border-radius: 8px;
+      padding: 12px 16px; color: #c8cdd8; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; resize: vertical; min-height: 60px; outline: none;
+    }
+    .custom-input:focus { border-color: #3b82f6; }
+    .custom-input::placeholder { color: #3a4256; }
+
+    /* Buttons */
+    .action-row { margin-top: 24px; display: flex; align-items: center; gap: 16px; }
+    .gen-btn {
+      padding: 12px 32px; background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      border: 1px solid #3b82f6; color: #fff; font-size: 14px; font-weight: 600;
+      border-radius: 8px; cursor: pointer; transition: all 0.2s ease;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .gen-btn:hover:not(:disabled) { background: linear-gradient(135deg, #2563eb, #3b82f6); box-shadow: 0 0 20px rgba(59,130,246,0.3); transform: translateY(-1px); }
+    .gen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .copy-btn {
+      padding: 8px 20px; background: #14532d; border: 1px solid #22c55e; color: #4ade80;
+      font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer;
+      transition: all 0.15s ease; font-family: 'DM Sans', sans-serif;
+    }
+    .copy-btn:hover { background: #166534; box-shadow: 0 0 12px rgba(34,197,94,0.2); }
+    .progress-text { font-size: 13px; color: #60a5fa; font-family: 'JetBrains Mono', monospace; animation: pulse 1.5s ease infinite; }
+
+    /* Output */
+    .output-section { margin-top: 24px; animation: fadeIn 0.4s ease; }
+    .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .output-box {
+      background: #0d1117; border: 1px solid #1e2638; border-radius: 8px; padding: 20px;
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.7;
+      white-space: pre-wrap; color: #c8cdd8; max-height: 500px; overflow-y: auto;
+    }
+    .output-box::-webkit-scrollbar { width: 6px; }
+    .output-box::-webkit-scrollbar-track { background: #0d1117; }
+    .output-box::-webkit-scrollbar-thumb { background: #1e2638; border-radius: 3px; }
+    .wa-hint {
+      margin-top: 12px; padding: 10px 14px; border-radius: 8px;
+      background: rgba(34,197,94,0.06); border: 1px solid #14532d;
+      font-size: 12px; color: #4ade80; font-family: 'JetBrains Mono', monospace;
+    }
+    .error-box {
+      margin-top: 16px; padding: 12px 16px; border-radius: 8px;
+      background: #1c1017; border: 1px solid #7f1d1d; color: #fca5a5; font-size: 13px;
+    }
+
+    /* Divider & footer */
+    .divider { margin: 40px 0 32px; height: 1px; background: linear-gradient(90deg, transparent, #1e2638, transparent); }
+    .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #1e2638; font-size: 11px; color: #3a4256; font-family: 'JetBrains Mono', monospace; text-align: center; }
+
+    /* Ideas */
+    .idea-card { padding: 14px 16px; background: #111827; border: 1px solid #1e2638; border-radius: 8px; transition: border-color 0.15s; }
+    .idea-card:hover { border-color: #2a3a54; }
+    .idea-tag { font-size: 10px; font-weight: 600; color: #3b82f6; background: #1e3a5f; padding: 2px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; }
+    .idea-title { font-size: 14px; font-weight: 600; color: #e8ecf4; }
+    .idea-desc { font-size: 13px; color: #6b7a90; line-height: 1.5; margin-top: 6px; }
+    .section-gap { margin-bottom: 16px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="glow-line"></div>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="margin-bottom: 20px;">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        <span class="badge-text">IDX Equity Desk • Jakarta</span>
+      </div>
+      <h1>Morning Briefing</h1>
+      <p class="subtitle">Live news search → WhatsApp-ready summary • Banks & Consumer Staples</p>
+    </div>
+
+    <!-- API Key -->
+    <div class="api-row">
+      <input type="password" id="apiKey" class="api-input" placeholder="Paste your Anthropic API key (sk-ant-...)" />
+      <div id="apiStatus" class="api-status empty">No key</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="sector">Sector News</button>
+      <button class="tab-btn" data-tab="company">Company News</button>
+      <button class="tab-btn" data-tab="custom">Custom Topic</button>
+    </div>
+
+    <!-- Sector Panel -->
+    <div id="panel-sector">
+      <div class="chip-header">
+        <span class="chip-label">Select topics</span>
+        <div style="display:flex; gap:8px;">
+          <button class="link-btn" onclick="selectAllSectors()">Select all</button>
+          <button class="link-btn" onclick="clearAllSectors()">Clear</button>
+        </div>
+      </div>
+      <div class="chip-row" id="sectorChips"></div>
+    </div>
+
+    <!-- Company Panel -->
+    <div id="panel-company" class="hidden">
+      <div class="chip-header">
+        <span class="chip-label">Select tickers</span>
+        <div style="display:flex; gap:8px;">
+          <button class="link-btn" onclick="selectAllTickers()">Select all</button>
+          <button class="link-btn" onclick="clearAllTickers()">Clear</button>
+        </div>
+      </div>
+      <div id="tickerChips"></div>
+    </div>
+
+    <!-- Custom Panel -->
+    <div id="panel-custom" class="hidden">
+      <p class="chip-label" style="margin-bottom:8px;">Enter your topic</p>
+      <textarea id="customTopic" class="custom-input" rows="2" placeholder="e.g. Dampak kenaikan harga CPO terhadap ICBP dan INDF..."></textarea>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-row">
+      <button class="gen-btn" id="genBtn" onclick="generate()">Generate Briefing</button>
+      <span class="progress-text hidden" id="progressText"></span>
+    </div>
+
+    <div class="error-box hidden" id="errorBox"></div>
+
+    <!-- Output -->
+    <div class="output-section hidden" id="outputSection">
+      <div class="output-header">
+        <span class="chip-label">Output — ready to share</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyOutput()">Copy for WhatsApp</button>
+      </div>
+      <div class="output-box" id="outputBox"></div>
+      <div class="wa-hint">Tap "Copy for WhatsApp" → paste into any chat or group</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Automation Ideas -->
+    <div>
+      <h2 style="font-size:18px; font-weight:700; color:#e8ecf4; margin-bottom:16px;">Other Automation Ideas</h2>
+      <div style="display:flex; flex-direction:column; gap:12px;" id="ideasContainer"></div>
+    </div>
+
+    <div class="footer">IDX Equity Coverage • Banks & Consumer Staples • Jakarta</div>
+  </div>
+
+<script>
+// ============== DATA ==============
+const SECTOR_TOPICS = [
+  { id: "idx_banking", label: "IDX Banking", query: "berita sektor perbankan Indonesia IDX saham bank hari ini" },
+  { id: "idx_consumer", label: "IDX Consumer", query: "berita sektor consumer staples FMCG Indonesia saham hari ini" },
+  { id: "bi_policy", label: "BI Policy", query: "Bank Indonesia suku bunga kebijakan moneter terbaru" },
+  { id: "idx_market", label: "IDX / IHSG", query: "IHSG bursa efek Indonesia saham hari ini market update" },
+  { id: "global_macro", label: "Global Macro", query: "global macro news Fed interest rates emerging markets Asia today" },
+  { id: "commodities", label: "CPO & Oil", query: "harga CPO crude palm oil minyak sawit Brent hari ini Indonesia" },
+  { id: "rupiah_fx", label: "IDR / FX", query: "kurs rupiah USD IDR nilai tukar hari ini Bank Indonesia" },
+  { id: "ojk_regulation", label: "OJK / Regulation", query: "OJK regulasi perbankan pasar modal Indonesia terbaru" },
+];
+
+const COVERAGE = {
+  Banks: ["BBCA", "BBRI", "BMRI", "BBNI", "BRIS", "BBTN"],
+  "Consumer Staples": ["UNVR", "ICBP", "INDF", "ULTJ", "KLBF", "CMRY", "MYOR"],
+};
+
+const IDEAS = [
+  { tag: "PORTFOLIO", title: "Ownership X-Ray Alert", desc: "Cross-reference KSEI daily disclosure with your holdings — flag any >1% holder changes, new institutional entries/exits, or creeping acquisitions on BBCA, BBRI, UNVR, etc." },
+  { tag: "EARNINGS", title: "Quarterly Earnings vs Consensus", desc: "Auto-pull quarterly financials from IDX filings, compare NII/PPOP/net income vs consensus, generate beat/miss summary with WhatsApp-ready format." },
+  { tag: "VALUATION", title: "Daily Valuation Heatmap", desc: "Pull closing prices for your coverage universe, compute P/E, P/BV, dividend yield vs 3Y/5Y average. WhatsApp table showing which names are cheap/rich vs history." },
+  { tag: "MACRO", title: "BI Rate Impact Scorecard", desc: "On BI rate decisions, auto-generate NIM sensitivity matrix for each bank in coverage, ranked by rate sensitivity." },
+  { tag: "FLOW", title: "Foreign Flow Monitor", desc: "Track daily foreign net buy/sell from IDX broker summary. Flag unusual volume or flow reversals in your coverage names — formatted for morning WA group." },
+  { tag: "RISK", title: "Geopolitical Risk Alert", desc: "Monitor keywords (Hormuz, CPO levy, rupiah intervention, OJK regulation) across news wires. Score severity 1-5 and map to your portfolio exposure." },
+];
+
+const SYSTEM_PROMPT = `You are a senior equity research assistant at an Indonesian buy-side investment fund based in Jakarta. Your job is to produce a concise, actionable morning briefing.
+
+CONTEXT:
+- The fund manager covers Indonesian-listed stocks (IDX) in Banking and Consumer Staples sectors
+- Key news sources to prioritize: Bisnis Indonesia, Kontan, CNBC Indonesia, IDX Channel, Bloomberg, Reuters, Investor Daily, Detik Finance, Kompas
+- All tickers reference IDX-listed companies (e.g., BBCA = PT Bank Central Asia Tbk)
+- Currency context: IDR (Indonesian Rupiah)
+- Regulatory bodies: OJK, Bank Indonesia, IDX/BEI
+
+FORMATTING RULES:
+- Write in plain text suitable for WhatsApp (NO markdown, NO asterisks for bold, NO underscores)
+- Use simple characters: arrows (→), bullets (•), dashes (-), equals (=) for structure
+- Be concise but insightful — highlight what MATTERS for portfolio positioning
+- For company news: mention the ticker, the event, and likely market impact (positive/negative/neutral)
+- For sector news: connect macro developments to specific IDX stock implications
+- Use professional but readable language, English with Indonesian terms where natural
+- Include the date at the top
+- End with a short "Key Watchpoints" section (3-4 items max)
+- Keep total length under 2000 characters for easy WhatsApp reading
+- If information is limited, say so honestly rather than speculating`;
+
+// ============== STATE ==============
+let currentTab = "sector";
+let selectedSectors = new Set(["idx_banking", "idx_consumer", "idx_market"]);
+let selectedTickers = new Set(["BBCA", "BBRI", "BMRI", "UNVR", "ICBP"]);
+let isLoading = false;
+let briefingText = "";
+
+// ============== INIT ==============
+function init() {
+  renderSectorChips();
+  renderTickerChips();
+  renderIdeas();
+  setupTabs();
+  setupApiKey();
+}
+
+function setupApiKey() {
+  const input = document.getElementById("apiKey");
+  const stored = tryGetKey();
+  if (stored) {
+    input.value = stored;
+    updateApiStatus(true);
+  }
+  input.addEventListener("input", () => {
+    const val = input.value.trim();
+    if (val.startsWith("sk-ant-")) {
+      try { sessionStorage.setItem("anth_key", val); } catch(e) {}
+      updateApiStatus(true);
+    } else {
+      updateApiStatus(false);
+    }
+  });
+}
+
+function tryGetKey() {
+  try { return sessionStorage.getItem("anth_key") || ""; } catch(e) { return ""; }
+}
+
+function updateApiStatus(ok) {
+  const el = document.getElementById("apiStatus");
+  if (ok) { el.className = "api-status ok"; el.textContent = "✓ Key set"; }
+  else { el.className = "api-status empty"; el.textContent = "No key"; }
+}
+
+// ============== TABS ==============
+function setupTabs() {
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentTab = btn.dataset.tab;
+      document.getElementById("panel-sector").classList.toggle("hidden", currentTab !== "sector");
+      document.getElementById("panel-company").classList.toggle("hidden", currentTab !== "company");
+      document.getElementById("panel-custom").classList.toggle("hidden", currentTab !== "custom");
+    });
+  });
+}
+
+// ============== CHIPS ==============
+function renderSectorChips() {
+  const container = document.getElementById("sectorChips");
+  container.innerHTML = "";
+  SECTOR_TOPICS.forEach(s => {
+    const el = document.createElement("div");
+    el.className = "chip" + (selectedSectors.has(s.id) ? " active" : "");
+    el.textContent = s.label;
+    el.addEventListener("click", () => {
+      if (selectedSectors.has(s.id)) selectedSectors.delete(s.id); else selectedSectors.add(s.id);
+      el.classList.toggle("active");
+    });
+    container.appendChild(el);
+  });
+}
+
+function renderTickerChips() {
+  const container = document.getElementById("tickerChips");
+  container.innerHTML = "";
+  Object.entries(COVERAGE).forEach(([sector, tickers]) => {
+    const label = document.createElement("p");
+    label.className = "sector-label";
+    label.textContent = sector;
+    container.appendChild(label);
+    const row = document.createElement("div");
+    row.className = "chip-row section-gap";
+    tickers.forEach(t => {
+      const el = document.createElement("div");
+      el.className = "chip" + (selectedTickers.has(t) ? " green-active" : "");
+      el.textContent = t;
+      el.addEventListener("click", () => {
+        if (selectedTickers.has(t)) { selectedTickers.delete(t); el.classList.remove("green-active"); }
+        else { selectedTickers.add(t); el.classList.add("green-active"); }
+      });
+      row.appendChild(el);
+    });
+    container.appendChild(row);
+  });
+}
+
+function selectAllSectors() { selectedSectors = new Set(SECTOR_TOPICS.map(s => s.id)); renderSectorChips(); }
+function clearAllSectors() { selectedSectors.clear(); renderSectorChips(); }
+function selectAllTickers() { selectedTickers = new Set(Object.values(COVERAGE).flat()); renderTickerChips(); }
+function clearAllTickers() { selectedTickers.clear(); renderTickerChips(); }
+
+// ============== IDEAS ==============
+function renderIdeas() {
+  const container = document.getElementById("ideasContainer");
+  IDEAS.forEach(idea => {
+    container.innerHTML += `
+      <div class="idea-card">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <span class="idea-tag">${idea.tag}</span>
+          <span class="idea-title">${idea.title}</span>
+        </div>
+        <p class="idea-desc">${idea.desc}</p>
+      </div>`;
+  });
+}
+
+// ============== GENERATE ==============
+function formatDate() {
+  return new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+}
+
+function buildPrompt() {
+  const date = formatDate();
+  if (currentTab === "sector") {
+    const topics = SECTOR_TOPICS.filter(s => selectedSectors.has(s.id)).map(s => s.label).join(", ");
+    return `Today is ${date}. Search for the latest Indonesian market and sector news on these topics and create a morning sector briefing:\n\nTopics: ${topics}\n\nPrioritize Indonesian financial news sources (Bisnis Indonesia, Kontan, CNBC Indonesia, Bloomberg). Search for each topic and synthesize into a single WhatsApp-ready briefing. Focus on last 24-48 hours. Include IHSG performance context.`;
+  } else if (currentTab === "company") {
+    const tickers = [...selectedTickers].join(", ");
+    return `Today is ${date}. Search for the latest news on these Indonesian-listed (IDX) companies and create a company news briefing:\n\nTickers: ${tickers}\n\nFor each company, search using both the ticker and company name. Check Indonesian financial news sources. Include: corporate actions, earnings, analyst ratings, regulatory news, ownership changes (KSEI), or material developments. Format as WhatsApp-ready briefing.`;
+  } else {
+    const topic = document.getElementById("customTopic").value.trim();
+    return `Today is ${date}. Search for the latest news on the following topic, with focus on implications for Indonesian equity markets (IDX), and create a briefing:\n\nTopic: ${topic}\n\nThe reader is a Jakarta-based equity fund manager covering IDX Banking and Consumer Staples. Format as WhatsApp-ready briefing.`;
+  }
+}
+
+async function generate() {
+  const apiKey = document.getElementById("apiKey").value.trim();
+  if (!apiKey || !apiKey.startsWith("sk-ant-")) {
+    showError("Please enter a valid Anthropic API key (starts with sk-ant-)");
+    return;
+  }
+  if (currentTab === "sector" && selectedSectors.size === 0) { showError("Select at least one topic"); return; }
+  if (currentTab === "company" && selectedTickers.size === 0) { showError("Select at least one ticker"); return; }
+  if (currentTab === "custom" && !document.getElementById("customTopic").value.trim()) { showError("Enter a topic"); return; }
+
+  isLoading = true;
+  const btn = document.getElementById("genBtn");
+  const prog = document.getElementById("progressText");
+  btn.disabled = true;
+  btn.textContent = "Generating...";
+  prog.classList.remove("hidden");
+  prog.textContent = "Searching Indonesian & global news...";
+  hideError();
+  document.getElementById("outputSection").classList.add("hidden");
+
+  // Animate dots
+  let dotCount = 0;
+  const dotInterval = setInterval(() => {
+    dotCount = (dotCount + 1) % 4;
+    btn.textContent = "Generating" + ".".repeat(dotCount);
+  }, 400);
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: buildPrompt() }],
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+      }),
+    });
+
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `API error ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    briefingText = data.content
+      .filter(b => b.type === "text")
+      .map(b => b.text)
+      .join("\n")
+      .trim();
+
+    if (!briefingText) throw new Error("No text response received. Try again.");
+
+    document.getElementById("outputBox").textContent = briefingText;
+    document.getElementById("outputSection").classList.remove("hidden");
+
+  } catch (err) {
+    showError(err.message || "Something went wrong. Check your API key and try again.");
+  } finally {
+    clearInterval(dotInterval);
+    isLoading = false;
+    btn.disabled = false;
+    btn.textContent = "Generate Briefing";
+    prog.classList.add("hidden");
+  }
+}
+
+// ============== COPY ==============
+function copyOutput() {
+  if (!briefingText) return;
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = briefingText;
+    ta.style.cssText = "position:fixed;left:-9999px;top:-9999px;opacity:0;";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, briefingText.length);
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.textContent = "Copy for WhatsApp"; }, 2200);
+  } catch (e) {
+    // Fallback: select the output text
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById("outputBox"));
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+// ============== ERROR ==============
+function showError(msg) {
+  const el = document.getElementById("errorBox");
+  el.textContent = msg;
+  el.classList.remove("hidden");
+}
+function hideError() { document.getElementById("errorBox").classList.add("hidden"); }
+
+// ============== GO ==============
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
