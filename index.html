@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IDX Equity Tools</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #06090f;
+      --bg-base: #0a0e17;
+      --bg-card: #0f1420;
+      --bg-card-hover: #131a28;
+      --border: #1a2035;
+      --border-hover: #253050;
+      --text-primary: #e8ecf4;
+      --text-secondary: #8892a6;
+      --text-muted: #4a5568;
+      --blue: #3b82f6;
+      --blue-glow: rgba(59, 130, 246, 0.15);
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --amber: #f59e0b;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg-deep);
+      color: var(--text-secondary);
+      font-family: 'DM Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-line {
+      height: 2px;
+      background: linear-gradient(90deg, transparent 5%, var(--blue) 30%, var(--cyan) 50%, var(--blue) 70%, transparent 95%);
+      animation: shimmer 4s ease-in-out infinite;
+      position: relative;
+      z-index: 1;
+    }
+    .glow-line::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 40px;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.08), transparent);
+      pointer-events: none;
+    }
+
+    @keyframes shimmer { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { box-shadow: 0 0 10px var(--blue), 0 0 20px rgba(59, 130, 246, 0.3); }
+      50% { box-shadow: 0 0 14px var(--blue), 0 0 30px rgba(59, 130, 246, 0.5); }
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header { margin-bottom: 56px; animation: fadeUp 0.6s ease both; }
+    .header-badge { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+    .header-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 10px var(--blue), 0 0 20px rgba(59, 130, 246, 0.3);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    .header-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--text-muted);
+      letter-spacing: 2.5px; text-transform: uppercase;
+    }
+    .header h1 {
+      font-size: 36px; font-weight: 700; color: var(--text-primary);
+      letter-spacing: -1px; line-height: 1.15; margin-bottom: 10px;
+    }
+    .header p { font-size: 15px; color: var(--text-muted); line-height: 1.5; max-width: 520px; }
+
+    .tools-grid { display: flex; flex-direction: column; gap: 16px; }
+
+    .tool-card {
+      display: block; text-decoration: none;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 28px 28px 24px;
+      transition: all 0.25s ease; position: relative; overflow: hidden;
+      animation: fadeUp 0.6s ease both;
+    }
+    .tool-card:nth-child(1) { animation-delay: 0.1s; }
+    .tool-card:nth-child(2) { animation-delay: 0.2s; }
+    .tool-card:nth-child(3) { animation-delay: 0.3s; }
+    .tool-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .tool-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+      opacity: 0; transition: opacity 0.25s ease;
+    }
+    .tool-card:hover {
+      border-color: var(--border-hover); background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(59,130,246,0.05);
+    }
+    .tool-card:hover::before { opacity: 1; }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+    .card-tag-row { display: flex; align-items: center; gap: 10px; }
+    .card-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+    }
+    .card-tag {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+      letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px; border-radius: 4px;
+    }
+    .card-arrow { color: var(--text-muted); font-size: 18px; transition: all 0.25s ease; margin-top: 2px; }
+    .tool-card:hover .card-arrow { color: var(--text-secondary); transform: translateX(4px); }
+
+    .card-title { font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; letter-spacing: -0.3px; }
+    .card-desc { font-size: 14px; color: var(--text-muted); line-height: 1.55; }
+    .card-meta {
+      display: flex; gap: 16px; margin-top: 16px; padding-top: 14px;
+      border-top: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .meta-item {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .meta-dot { width: 4px; height: 4px; border-radius: 50%; }
+
+    .card-blue { --accent-color: var(--blue); }
+    .card-blue .card-icon { background: rgba(59,130,246,0.1); color: var(--blue); }
+    .card-blue .card-tag { background: rgba(59,130,246,0.1); color: var(--blue); }
+    .card-blue .meta-dot { background: var(--blue); }
+
+    .card-green { --accent-color: var(--green); }
+    .card-green .card-icon { background: rgba(16,185,129,0.1); color: var(--green); }
+    .card-green .card-tag { background: rgba(16,185,129,0.1); color: var(--green); }
+    .card-green .meta-dot { background: var(--green); }
+
+    .card-amber { --accent-color: var(--amber); }
+    .card-amber .card-icon { background: rgba(245,158,11,0.1); color: var(--amber); }
+    .card-amber .card-tag { background: rgba(245,158,11,0.1); color: var(--amber); }
+    .card-amber .meta-dot { background: var(--amber); }
+
+    .card-cyan { --accent-color: var(--cyan); }
+    .card-cyan .card-icon { background: rgba(6,182,212,0.1); color: var(--cyan); }
+    .card-cyan .card-tag { background: rgba(6,182,212,0.1); color: var(--cyan); }
+    .card-cyan .meta-dot { background: var(--cyan); }
+
+    .coming-soon { pointer-events: none; opacity: 0.45; }
+    .coming-soon .card-arrow { display: none; }
+    .soon-badge {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted);
+      border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; letter-spacing: 1px;
+    }
+
+    .footer {
+      margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border);
+      text-align: center; animation: fadeUp 0.6s ease 0.5s both;
+    }
+    .footer-text { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; }
+    .footer-link { color: var(--text-muted); text-decoration: none; transition: color 0.15s; }
+    .footer-link:hover { color: var(--text-secondary); }
+
+    @media (max-width: 600px) {
+      .container { padding: 32px 16px 48px; }
+      .header h1 { font-size: 28px; }
+      .tool-card { padding: 20px; }
+      .card-title { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-line"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-badge">
+        <div class="header-dot"></div>
+        <span class="header-label">Voxtur Project • Jakarta</span>
+      </div>
+      <h1>IDX Equity Tools</h1>
+      <p>Analytics & automation dashboards for Indonesian equity market coverage.</p>
+    </div>
+
+    <div class="tools-grid">
+
+      <a href="KSEI-Ownership-Dashboard.html" class="tool-card card-blue">
+        <div class="card-top">
+          <div class="card-tag-row">
+            <div class="card-icon">🏛</div>
+            <span class="card-tag">Data</span>
+          </div>
+          <span class="card-arrow">→</span>
+        </div>
+        <div class="card-title">KSEI Ownership Dashboard</div>
+        <div class="card-desc">Explore major shareholders (>1% holdings) across 955 IDX-listed emiten. Filter by free float, nationality, and conglomerate group.</div>
+        <div class="card-meta">
+          <span class="meta-item"><span class="meta-dot"></span>955 Emiten</span>
+          <span class="meta-item"><span class="meta-dot"></span>7,257 Holder Records</span>
+          <span class="meta-item"><span class="meta-dot"></span>KSEI Data</span>
+        </div>
+      </a>
+
+      <a href="IDX-Morning-Briefing.html" class="tool-card card-green">
+        <div class="card-top">
+          <div class="card-tag-row">
+            <div class="card-icon">📡</div>
+            <span class="card-tag">AI + Live Search</span>
+          </div>
+          <span class="card-arrow">→</span>
+        </div>
+        <div class="card-title">IDX Morning Briefing</div>
+        <div class="card-desc">AI-powered news summarizer for Banking & Consumer Staples coverage. Searches live Indonesian and global news, outputs WhatsApp-ready briefings.</div>
+        <div class="card-meta">
+          <span class="meta-item"><span class="meta-dot"></span>Live Web Search</span>
+          <span class="meta-item"><span class="meta-dot"></span>WhatsApp Format</span>
+          <span class="meta-item"><span class="meta-dot"></span>API Key Required</span>
+        </div>
+      </a>
+
+      <div class="tool-card card-amber coming-soon">
+        <div class="card-top">
+          <div class="card-tag-row">
+            <div class="card-icon">📊</div>
+            <span class="card-tag">Valuation</span>
+          </div>
+          <span class="soon-badge">COMING SOON</span>
+        </div>
+        <div class="card-title">Daily Valuation Heatmap</div>
+        <div class="card-desc">Coverage universe P/E, P/BV, and dividend yield vs historical averages. Spot which names are trading cheap or rich at a glance.</div>
+      </div>
+
+      <div class="tool-card card-cyan coming-soon">
+        <div class="card-top">
+          <div class="card-tag-row">
+            <div class="card-icon">💹</div>
+            <span class="card-tag">Flow</span>
+          </div>
+          <span class="soon-badge">COMING SOON</span>
+        </div>
+        <div class="card-title">Foreign Flow Monitor</div>
+        <div class="card-desc">Daily foreign net buy/sell tracker from IDX broker summary data. Flags unusual volume and flow reversals in your coverage names.</div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      <p class="footer-text">
+        Built by <a href="https://github.com/voxtur33" class="footer-link">voxtur33</a> • IDX Equity Coverage • Banks & Consumer Staples
+      </p>
+    </div>
+  </div>
+</body>
+</html>
